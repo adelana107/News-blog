@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="profile-container">
+    <div class="profile-details">
+        <h1>Update Your Profile</h1>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}  <!-- This will render the form fields -->
+
+            <button type="submit" class="update-button">Save Changes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

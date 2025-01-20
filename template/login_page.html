@@ -1,0 +1,48 @@
+{% extends 'main.html'  %}
+
+
+{% block content  %}
+
+
+
+
+<div class="container-fluid p-0">
+    <div class="row no-gutters">
+        <!-- All News Section -->
+        <div class="col-lg-8">
+            <div class="section-title">
+                <h4 class="m-0 text-uppercase font-weight-bold">Login</h4>
+            </div>
+            <form action="{% url 'login'  %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="username" class="input-field" placeholder="Username" required>
+                <input type="password" name="password" class="input-field" placeholder="Password" required>
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+            <div class="footer">
+                <p>Don't have an account? <a href="{% url 'register'  %}">Sign up</a></p>
+            </div>
+    
+        </div>
+    </div>
+</div>   
+
+{% include 'footer.html' %}
+
+<!-- Back to Top -->
+<a href="#" class="btn btn-primary btn-square back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+<script src="lib/easing/easing.min.js"></script>
+<script src="lib/owlcarousel/owl.carousel.min.js"></script>
+
+<!-- Template Javascript -->
+<script src="js/main.js"></script>
+
+{% endblock  %}
+
+
+
+

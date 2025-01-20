@@ -1,0 +1,49 @@
+
+
+{% load static  %}
+<div class="container-fluid p-0">
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-2 py-lg-0 px-lg-5">
+        <a href="{% url 'home' %}"class="navbar-brand d-block d-lg-none">
+            <h1 class="m-0 display-4 text-uppercase text-primary">Biz<span class="text-white font-weight-normal">News</span></h1>
+        </a>
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-between px-0 px-lg-3" id="navbarCollapse">
+            <div class="navbar-nav mr-auto py-0">
+                <a href="{% url 'all-news'  %}" class="nav-item nav-link">All news</a>
+                <a href="{% url 'main-news'  %}" class="nav-item nav-link">Main News</a>
+                <a href="{% url 'featured-news'%}" class="nav-item nav-link">Featured News</a>
+                <a href="{% url 'breaking-news' %}" class="nav-item nav-link">Breaking News</a>
+                <a href="{% url 'latest-news'  %}" class="nav-item nav-link">Latest News</a>
+                <a href="{% url 'trending-news'  %}" class="nav-item nav-link">Trending News</a>
+                <a href="{% url 'popular-news'  %}" class="nav-item nav-link">Popular News</a>
+                <!-- <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Category</a>
+                    <div class="dropdown-menu rounded-0 m-0">
+                        {% for category in categories  %}
+                        <a href="{% url 'home' %}?q={{category.name}}" class="dropdown-item">{{category.name}} <span>{{category.name_set.all.count}}</span></a>
+                        
+                        {% endfor %}
+                        
+                    </div> -->
+                </div>
+                <a href="contact.html" class="nav-item nav-link">Contact</a>
+            </div>
+            <form class="header__search" method="GET" action="{% url 'post_search' %}">
+        <label>
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+            <title>search</title>
+            <path d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z"></path>
+          </svg>
+          <input type="text" name="query" value="{{ query }}" placeholder="Search posts...">
+        </label>
+      </form>
+        </div>
+    </nav>
+</div>
+
+<!-- search_results.html -->
+
+
+

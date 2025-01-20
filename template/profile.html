@@ -1,0 +1,67 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="profile-container">
+
+    <!-- Profile Details -->
+    <div class="profile-details">
+        <div class="user-details">
+            <!-- Display Avatar -->
+            <div class="avatar-container">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="Avatar" class="avatar">
+                {% else %}
+                    <img src="{% static 'default-avatar.svg' %}" alt="Default Avatar" class="avatar">
+                {% endif %}
+            </div>
+
+            <!-- Display Username -->
+            {% if user == user.profile.user %}
+            <h1 class="username">Hey! {{ user.username }}</h1>
+            {% endif %}
+        </div>
+        
+        <h2><p><strong>Username:</strong> {{ user.username }}</p></h2>
+        <h2><p><strong>First Name:</strong> {{ user.first_name }}</p></h2>
+        <h2><p><strong>Last Name:</strong> {{ user.last_name }} </p></h2>
+        <h2>Bio</h2>
+        <p>{{user.bio}}</p>
+
+        <h2>Contact Information</h2>
+        <ul>
+            <li><strong>Email:</strong> {{user.email}}</li>
+            <li><strong>Phone:</strong> {{user.phone_number}}</li>
+        </ul>
+
+        <h2>Experience</h2>
+        <ul>
+            <li>{{user.experience}}</li>
+        </ul>
+
+        <h2>Hobbies</h2>
+        <ul class="hobbies">
+            <li>{{user.hobbies}}</li>
+        </ul>
+
+        <h2>Social Media</h2>
+        <div class="social-links">
+            <a href="https://twitter.com" target="_blank" class="social-icon">{{user.social}}</a>
+        </div>
+        
+        <h2>Total views:</h2><p>{{total_views}}</p>
+
+        <!-- Update Button -->
+        <div class="update-button-container">
+            <div class="update-button-container">
+                {% if user == user.profile.user %}  <!-- Check if the logged-in user is the owner of the profile -->
+                    <a href="{% url 'update-profile' pk=user.pk %}" class="update-button">Update Profile</a>
+                {% endif %}
+            </div>            </div>
+       
+    </div>
+</div>
+
+{% include 'footer.html' %}
+{% endblock %}
