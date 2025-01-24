@@ -21,15 +21,6 @@
                         <a class="nav-link text-body small" href="{% url 'login'  %}">Login</a>
                         {% endif  %}
                     </li>
-                    <li class="nav-item border-right border-secondary">
-                        {% if user.groups.all %}
-                        {% for group in user.groups.all %}
-                            {% if group.name == 'Poster' %}
-                        <a class="nav-link text-body small" href="{% url  'create-post' user.id  %}">Post</a>
-                        {% endif %}
-                        {% endfor %}
-                        {% endif %}
-                    </li>
                    
                    
                 </ul>

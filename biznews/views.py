@@ -8,12 +8,26 @@ from django.db.models import Sum
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import MyUserCreationForm, PostForm, ProfileForm
+from .forms import MyUserCreationForm, PostForm, ProfileForm, ReplyForm
 from django.shortcuts import render, get_object_or_404
 from django.http import Http404
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
 
 
+
+
+def admin_list(request):
+    User = get_user_model()
+    users = User.objects.all()
+    
+    # Check if the user is authenticated (this is redundant due to @login_required)
+    if request.user.is_authenticated:
+        # If the user is not authenticated, redirect to login page
+        return render(request, 'admin_list.html', {'users': users})
+    else:
+        return redirect('login')        
 
 
 def login_user(request):
@@ -68,7 +82,7 @@ def post_search(request):
     if query:
         posts = posts.filter(
             Q(title__icontains=query) | Q(category__name__icontains=query)  # Use Q for OR condition
-        )
+        ).distinct()
 
     return render(request, 'search_page.html', {'posts': posts, 'query': query})
 
@@ -101,6 +115,7 @@ def profile_page(request, pk):
     
     # Get the total views for all posts by the user
     total_views = Post.objects.filter(profile__user=user).aggregate(Sum('view_count'))['view_count__sum'] or 0
+    total_posts = Post.objects.filter(profile__user=user).count()
     
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=user)
@@ -108,7 +123,7 @@ def profile_page(request, pk):
             form.save()
             return redirect('profile_page', pk=pk)
     
-    return render(request, 'profile.html', {'user': user, 'total_views': total_views})
+    return render(request, 'profile.html', {'user': user, 'total_views': total_views, 'total_posts': total_posts})
 
 
 
@@ -133,49 +148,54 @@ def view_profile(request, pk):
 
 
 
+from django.shortcuts import get_object_or_404, redirect, render
+from .models import Post, Comment
+from .forms import CommentForm, ReplyForm
 
 def articlePage(request, pk):
-    post = Post.objects.get(pk=pk)
-    comments = post.comments.all()  # Fetch all comments related to this post
+    post = get_object_or_404(Post, pk=pk)
+    comments = post.comments.filter(parent__isnull=True)  # Top-level comments only
     comment_form = CommentForm()
+    reply_form = ReplyForm()
 
     if request.method == 'POST':
-        comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
-            comment = comment_form.save(commit=False)  # Don't commit to DB yet
-            comment.post = post  # Associate comment with the correct post
-            if request.user.is_authenticated:
+        if not request.user.is_authenticated:
+            return redirect('login')  # Redirect unauthenticated users to login
+
+        # Handle new comments
+        if 'comment_submit' in request.POST:  # Check if comment form is submitted
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.post = post
                 comment.user = request.user
-            comment.save()  # Save the comment to DB
-            return redirect('article', pk=pk)
-        else:
-            # If the user is not logged in, redirect to the login page
-            return redirect('login')
+                comment.save()
+                return redirect('article', pk=pk)  # Prevent duplicate submissions on refresh
 
-    # Check if the user has already viewed this post in the session
-    if not request.session.get(f'viewed_post_{post.id}', False):
-        # Increment the view count for the post
-        post.view_count += 1
-        post.save()
-        # Mark this post as viewed in the session
-        request.session[f'viewed_post_{post.id}'] = True
+        # Handle new replies
+        elif 'reply_submit' in request.POST:  # Check if reply form is submitted
+            reply_form = ReplyForm(request.POST)
+            if reply_form.is_valid():
+                reply = reply_form.save(commit=False)
+                reply.post = post
+                reply.user = request.user
+                parent_id = request.POST.get('parent_id')
+                try:
+                    reply.parent = Comment.objects.get(id=parent_id)
+                except Comment.DoesNotExist:
+                    pass
+                reply.save()
+                return redirect('article', pk=pk)
 
-    # Fetch other related posts (for trending, advertisements, categories)
-    trending_news = Post.objects.filter(category__name='Trending News')[:1]
-    advertisement_news = Post.objects.filter(category__name='Advertisement News')[:1]
-    categories = Category.objects.all()
-    current_date = datetime.now()
-
-    # Pass everything to the template
     return render(request, 'article.html', {
         'article': post,
-        'categories': categories,
-        'trending_news': trending_news,
-        'advertisement_news': advertisement_news,
         'comments': comments,
         'comment_form': comment_form,
-        'current_date': current_date,
+        'reply_form': reply_form,
     })
+
+
+
 
 
 def create_Post(request, pk=None):
@@ -215,6 +235,64 @@ def create_Post(request, pk=None):
 
 
 
+def update_post(request, pk=None):
+
+    # Fetch the existing post or return a 404 error if not found
+    post = get_object_or_404(Post, pk=pk)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            # Update the post instance but don't save it yet
+            post = form.save(commit=False)
+
+            # Save the post first to update its fields
+            post.save()
+
+            # Handle the categories (ManyToManyField)
+            categories = form.cleaned_data.get('category')
+            post.category.set(categories)  # Update selected categories
+
+            # Save the post again after the categories are set
+            post.save()  # Final save to persist the category relationships
+
+            # Redirect to the home page or updated post detail page
+            return redirect('article', pk=pk)
+
+    else:
+        # Populate the form with the existing post data
+        form = PostForm(instance=post)
+
+    return render(request, 'update_post.html', {'form': form, 'post': post})
+
+
+
+def delete_post(request, pk):
+    # Retrieve the post by primary key (pk)
+    post = get_object_or_404(Post, pk=pk)
+
+
+    if request.method == 'POST':
+        # Delete the post
+        post.delete()
+        messages.success(request, "Post has been deleted successfully.")
+        return redirect('home')
+
+    # Render a confirmation template for delete
+    return render(request, 'delete_post.html', {'post': post})
+
+
+
+
+
+
+
+
+
+
+
+
+
 def all_news(request):
 
 
@@ -225,7 +303,7 @@ def all_news(request):
 
     
     # Filter posts for the "Advertisement News" category
-    advertisement_news = Post.objects.filter(category__name='Advertisement News')
+    advertisement_news = Post.objects.filter(category__name='Advertisement News')[0:1]
     current_date = datetime.now()
     
     return render(request, 'all_news.html', {'all_news': all_news, 'advertisement_news': advertisement_news, 'current_date': current_date})

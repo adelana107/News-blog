@@ -22,7 +22,11 @@ urlpatterns = [
     path('register/', views.registerPage, name='register'),
     path('profile-page/<int:pk>', views.profile_page, name='profile-page'),
     path('update-profile/<int:pk>', views.update_profile, name = 'update-profile'),
-    path('create-post/<int:pk>', views.create_Post, name= 'create-post')
+    path('create-post/<int:pk>', views.create_Post, name= 'create-post'),
+    path('update-post/<int:pk>', views.update_post, name= 'update-post'),
+    path('post/delete/<int:pk>/', views.delete_post, name='delete_post'),
+    path('users/', views.admin_list, name='admin-list'),
+   
    
    
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

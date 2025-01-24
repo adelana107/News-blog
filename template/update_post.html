@@ -1,0 +1,31 @@
+{% extends 'main.html'   %}
+{% load static  %}
+
+{% block content  %}
+
+
+
+
+
+
+<!-- create_post.html -->
+
+
+
+  <h2>Update post</h2>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Post</button>
+  </form>
+
+
+
+
+ 
+  {% include 'footer.html' %}
+
+  
+
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'main.html'   %}
+{% load static  %}
+
+{% block content  %}
+
+
+<body>
+    <h1>Are you sure you want to delete this post?</h1>
+    <h2>{{ post.title }}</h2>
+    <p>{{ post.content }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Yes, delete</button>
+        <a href="{% url 'article' user.id %}">Cancel</a>
+    </form>
+</body>
+
+
+{% include 'footer.html' %}
+
+  
+
+
+{% endblock %}

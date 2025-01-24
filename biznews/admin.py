@@ -12,7 +12,7 @@ class CustomUserAdmin(UserAdmin):
 
     # Add avatar field to the fieldsets to make it editable in the user form
     fieldsets = (
-        ('User Information', {'fields': ('username', 'email', 'first_name', 'last_name', 'password', 'avatar', 'bio', 'hobbies', 'experience', 'phone', 'social_link')}),
+        ('User Information', {'fields': ('username', 'email', 'first_name', 'last_name', 'password', 'avatar', 'bio', 'hobbies', 'experience', 'phone', 'social')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important Dates', {'fields': ('last_login', 'date_joined')}),
     )

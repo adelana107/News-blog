@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
 
 
 
@@ -41,7 +42,7 @@ class Post(models.Model):
         ordering = ['-date_posted']
 
     def __str__(self):
-        return f"{self.title} - profile: {self.profile.name}"  # Adjusted to reflect single editor
+        return f"{self.title} - profile: {self.profile.user.username}"  # Adjusted to reflect single editor
 
 
     
@@ -51,21 +52,21 @@ class Category(models.Model):
     def __str__(self):
         return self.name    
     
-
 class Comment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    email = models.EmailField()
-    body = models.TextField()
-    date_posted = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to='images/', default='images/default.jpg')
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # User is required
+    post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')  # Link to the post
+    body = models.TextField(max_length=1000)  # Main content of the comment (with length limit)
+    parent = models.ForeignKey(
+        'self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE
+    )  # For nested replies
+    date_posted = models.DateTimeField(default=now)  # When the comment was posted
 
     class Meta:
-        ordering = ['date_posted']
+        ordering = ['-date_posted']  # Show latest comments first
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {self.body[:30]}"  # Commenter's username and snippet
+    
 
 
 class Profile(models.Model):
@@ -74,13 +75,14 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=100)
     avatar = models.ImageField(upload_to='images/', default='images/default.jpg')
     date_posted = models.DateTimeField(auto_now_add=True)
-    social_link = models.URLField()
+    social = models.URLField()
     email = models.EmailField()
     phone = models.CharField(max_length=100)
     position = models.CharField(max_length=100)
     hobbies = models.CharField(max_length=100)
     bio = models.TextField()
     experience = models.TextField()
+    total_views = models.IntegerField(default=0)
     total_views = models.IntegerField(default=0)
 
     def __str__(self):

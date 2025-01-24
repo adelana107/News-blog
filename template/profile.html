@@ -23,7 +23,14 @@
             {% endif %}
         </div>
         
-        <h2><p><strong>Username:</strong> {{ user.username }}</p></h2>
+        <h2><p><strong>Username:</strong> {{ user.username }} {% if user.groups.all %}
+            {% for group in user.groups.all %}
+                {% if group.name == 'Poster' %}
+                ☆
+                {% endif %}
+                        {% endfor %}
+                        {% endif %}
+            </p></h2>
         <h2><p><strong>First Name:</strong> {{ user.first_name }}</p></h2>
         <h2><p><strong>Last Name:</strong> {{ user.last_name }} </p></h2>
         <h2>Bio</h2>
@@ -32,7 +39,7 @@
         <h2>Contact Information</h2>
         <ul>
             <li><strong>Email:</strong> {{user.email}}</li>
-            <li><strong>Phone:</strong> {{user.phone_number}}</li>
+            <li><strong>Phone:</strong> {{user.phone}}</li>
         </ul>
 
         <h2>Experience</h2>
@@ -49,17 +56,81 @@
         <div class="social-links">
             <a href="https://twitter.com" target="_blank" class="social-icon">{{user.social}}</a>
         </div>
+
+        {% if user.groups.all %}
+            {% for group in user.groups.all %}
+                {% if group.name == 'Poster' %}
         
         <h2>Total views:</h2><p>{{total_views}}</p>
+        <h2>Total posts:</h2><p>{{total_posts}}</p>
 
+        <div class="profile-container">
+            <!-- Existing content -->
+        
+            <div style="width: 200px; height: 200px;">
+                <canvas id="profileChart"></canvas>
+             </div>
+             
+             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+             <script>
+             document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('profileChart');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Total Views', 'Total Posts'],
+                        datasets: [{
+                            data: [{{ total_views }}, {{ total_posts }}],
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.6)', 
+                                'rgba(255, 99, 132, 0.6)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+             });
+             </script>
+        
+
+        </div>
         <!-- Update Button -->
         <div class="update-button-container">
-            <div class="update-button-container">
-                {% if user == user.profile.user %}  <!-- Check if the logged-in user is the owner of the profile -->
-                    <a href="{% url 'update-profile' pk=user.pk %}" class="update-button">Update Profile</a>
-                {% endif %}
-            </div>            </div>
+            {% if user == user.profile.user %}  <!-- Check if the logged-in user is the owner of the profile -->
+                <a href="{% url 'update-profile' pk=user.pk %}" class="update-button">Update Profile</a>
+            {% endif %}
+            
+        </div>
+
+        <!-- Add Post Button -->
+        <div>{% if request.user.is_authenticated and request.user == user %}
+        <a href="{% url 'create-post' user.id %}" class="post-button">Add a Post</a>
+        {% endif %}</div>
+
+        <div>
+            {% if request.user.is_authenticated and request.user == user %}
+        <a href="{% url 'update-profile' user.id %}" class="post-button">Edit</a>
+        {% endif %}
+
+        </div>
+
+        {% endif %}
+{% endfor %}
+{% endif %}
+
+<div>
+    {% if request.user.is_authenticated and request.user == user %}
+<a href="{% url 'update-profile' user.id %}" class="post-button">update ✎..</a>
+
+{% endif %}
+</div>
        
+
+        
+
     </div>
 </div>
 
