@@ -2,6 +2,11 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+from django.contrib.auth.signals import user_logged_in
+import logging
+from django.contrib.sessions.models import Session
+from datetime import timedelta
+
 
 
 
@@ -91,4 +96,28 @@ class Profile(models.Model):
     def get_full_name(self):
         return self.user.username
     
+class UserLoginSession(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="login_sessions")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    login_date = models.DateTimeField(default=now)
 
+# Signal to capture login events
+def capture_login(sender, request, user, **kwargs):
+    # Get the user's IP address
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    ip = x_forwarded_for.split(',')[0] if x_forwarded_for else request.META.get('REMOTE_ADDR')
+
+    # Check for an existing session with the same IP and within 1 hour
+    one_hour_ago = now() - timedelta(hours=1)
+    existing_session = UserLoginSession.objects.filter(
+        user=user, 
+        ip_address=ip, 
+        login_date__gte=one_hour_ago
+    ).exists()
+
+    if not existing_session:
+        # Create a login session if no duplicate exists in the past hour
+        UserLoginSession.objects.create(user=user, ip_address=ip, login_date=now())
+
+# Connect the signal
+user_logged_in.connect(capture_login)

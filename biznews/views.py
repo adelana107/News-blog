@@ -14,8 +14,19 @@ from django.http import Http404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
+from .models import UserLoginSession
 
 
+
+
+def user_login_sessions(request, pk):
+    User = get_user_model()
+    user = get_object_or_404(User, pk=pk)
+
+    # Fetch login sessions for the user
+    sessions = user.login_sessions.all().order_by('-login_date')
+
+    return render(request, "login_sessions.html", {"user": user, "sessions": sessions})
 
 
 def admin_list(request):
@@ -104,7 +115,7 @@ def home(request):
     current_date = datetime.now()
 
     
-    return render(request, 'home.html', {'posts': posts, 'featured_news': featured_news, 'main_news': main_news, 'latest_news': latest_news, 'advertisement_news': advertisement_news, 'trending_news': trending_news, 'categories': categories, 'breaking_news': breaking_news, 'popular_news': popular_news, 'all_news': all_news, 'current_date': current_date})
+    return render(request, 'home.html', {'posts': posts, 'featured_news': featured_news, 'main_news': main_news, 'latest_news': latest_news, 'advertisement_news': advertisement_news, 'trending_news': trending_news, 'categories': categories, 'breaking_news': breaking_news, 'popular_news': popular_news, 'all_news': all_news, 'current_date': current_date,})
 
 
 
@@ -148,9 +159,6 @@ def view_profile(request, pk):
 
 
 
-from django.shortcuts import get_object_or_404, redirect, render
-from .models import Post, Comment
-from .forms import CommentForm, ReplyForm
 
 def articlePage(request, pk):
     post = get_object_or_404(Post, pk=pk)
