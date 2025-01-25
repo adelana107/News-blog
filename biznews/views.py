@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Post, Category, Comment, Profile
+from .models import Post, Category, Comment, Profile, Like
 from django.db.models import Q
 from .forms import CommentForm
 from datetime import datetime
@@ -15,6 +15,30 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from .models import UserLoginSession
+
+
+
+
+@login_required
+def like_post(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    
+    # Check if the user has already liked the post
+    if not Like.objects.filter(post=post, user=request.user).exists():
+        # Create a new like entry
+        Like.objects.create(post=post, user=request.user)
+    
+    return redirect('article', pk=pk)  # Redirect to the post detail page
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -121,20 +145,25 @@ def home(request):
 
 
 def profile_page(request, pk):
-    # Get the user and profile instance
     user = get_user_model().objects.get(pk=pk)
-    
-    # Get the total views for all posts by the user
+
+    # Get aggregate data
     total_views = Post.objects.filter(profile__user=user).aggregate(Sum('view_count'))['view_count__sum'] or 0
     total_posts = Post.objects.filter(profile__user=user).count()
-    
+    total_likes = Like.objects.filter(post__profile__user=user).count()
+
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
             return redirect('profile_page', pk=pk)
-    
-    return render(request, 'profile.html', {'user': user, 'total_views': total_views, 'total_posts': total_posts})
+
+    return render(request, 'profile.html', {
+        'user': user,
+        'total_views': total_views,
+        'total_posts': total_posts,
+        'total_likes': total_likes,
+    })
 
 
 
@@ -161,8 +190,15 @@ def view_profile(request, pk):
 
 
 def articlePage(request, pk):
+    # Get the article (post)
     post = get_object_or_404(Post, pk=pk)
-    comments = post.comments.filter(parent__isnull=True)  # Top-level comments only
+
+    # Increment the view count
+    post.view_count += 1
+    post.save()
+
+    # Get top-level comments
+    comments = post.comments.filter(parent__isnull=True)
     comment_form = CommentForm()
     reply_form = ReplyForm()
 
@@ -203,6 +239,19 @@ def articlePage(request, pk):
     })
 
 
+
+
+
+@login_required
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    
+    # Check if the user has already liked the post
+    if not Like.objects.filter(post=post, user=request.user).exists():
+        # Create a new like entry
+        Like.objects.create(post=post, user=request.user)
+    
+    return redirect('article', pk=post.id)  # Redirect to the post detail page
 
 
 

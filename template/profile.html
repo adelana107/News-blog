@@ -63,6 +63,7 @@
         
         <h2>Total views:</h2><p>{{total_views}}</p>
         <h2>Total posts:</h2><p>{{total_posts}}</p>
+        <h2>Total Likes:</h2><p>{{total_likes}}</p>
 
         <div class="profile-container">
             <!-- Existing content -->
@@ -78,12 +79,15 @@
                 new Chart(ctx, {
                     type: 'pie',
                     data: {
-                        labels: ['Total Views', 'Total Posts'],
+                        labels: ['Total Views', 'Total Posts', 'Total_likes'],
                         datasets: [{
-                            data: [{{ total_views }}, {{ total_posts }}],
+                            data: [{{ total_views }}, {{ total_posts }}, {{ total_likes }}],
                             backgroundColor: [
                                 'rgba(75, 192, 192, 0.6)', 
-                                'rgba(255, 99, 132, 0.6)'
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+
+
                             ]
                         }]
                     },
@@ -94,6 +98,7 @@
                 });
              });
              </script>
+        
         
 
         </div>
