@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Post, Category, Comment, Profile, Like
+from .models import Post, Category, Comment, Profile, Like, Dislike
 from django.db.models import Q
 from .forms import CommentForm
 from datetime import datetime
@@ -15,27 +15,64 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from .models import UserLoginSession
+from django.http import JsonResponse
 
 
 
 
 @login_required
-def like_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    user = request.user
+
+    # Check if the user has already disliked the post
+    if Dislike.objects.filter(post=post, user=user).exists():
+        Dislike.objects.filter(post=post, user=user).delete()
+
+    # Toggle like
+    like, created = Like.objects.get_or_create(post=post, user=user)
+    if not created:
+        like.delete()
+
+    likes_count = post.likes.count()
+    dislikes_count = post.dislikes.count()
     
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'liked': created,
+            'likes_count': likes_count,
+            'dislikes_count': dislikes_count,
+        })
+
+    return redirect('article', pk=post.id)
+
+@login_required
+def dislike_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    user = request.user
+
     # Check if the user has already liked the post
-    if not Like.objects.filter(post=post, user=request.user).exists():
-        # Create a new like entry
-        Like.objects.create(post=post, user=request.user)
+    if Like.objects.filter(post=post, user=user).exists():
+        Like.objects.filter(post=post, user=user).delete()
+
+    # Toggle dislike
+    dislike, created = Dislike.objects.get_or_create(post=post, user=user)
+    if not created:
+        dislike.delete()
+
+    likes_count = post.likes.count()
+    dislikes_count = post.dislikes.count()
     
-    return redirect('article', pk=pk)  # Redirect to the post detail page
 
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'disliked': created,
+            'likes_count': likes_count,
+            'dislikes_count': dislikes_count,
+        })
 
-
-
-
-
-
+    return redirect('article', pk=post.id)
 
 
 
@@ -151,6 +188,7 @@ def profile_page(request, pk):
     total_views = Post.objects.filter(profile__user=user).aggregate(Sum('view_count'))['view_count__sum'] or 0
     total_posts = Post.objects.filter(profile__user=user).count()
     total_likes = Like.objects.filter(post__profile__user=user).count()
+    total_dislikes = Dislike.objects.filter(post__profile__user=user).count()
 
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=user)
@@ -163,6 +201,7 @@ def profile_page(request, pk):
         'total_views': total_views,
         'total_posts': total_posts,
         'total_likes': total_likes,
+        'total_dislikes': total_dislikes,
     })
 
 
@@ -245,15 +284,20 @@ def articlePage(request, pk):
 @login_required
 def like_post(request, post_id):
     post = get_object_or_404(Post, id=post_id)
+    liked = False
     
-    # Check if the user has already liked the post
     if not Like.objects.filter(post=post, user=request.user).exists():
-        # Create a new like entry
         Like.objects.create(post=post, user=request.user)
+        liked = True
+    else:
+        Like.objects.filter(post=post, user=request.user).delete()
     
-    return redirect('article', pk=post.id)  # Redirect to the post detail page
-
-
+    likes_count = post.likes.count()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'liked': liked, 'likes_count': likes_count})
+    
+    return redirect('article', pk=post.id)
 
 def create_Post(request, pk=None):
     # Check if the user belongs to the 'Poster' group

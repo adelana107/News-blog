@@ -52,6 +52,19 @@ class Post(models.Model):
 
 
 
+class Dislike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='dislikes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')  # Ensure that a user can only like a post once
+
+    def __str__(self):
+        return f"{self.user.username} dislikes {self.post.title}"
+
+
+
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -110,7 +123,7 @@ class Profile(models.Model):
     bio = models.TextField()
     experience = models.TextField()
     total_views = models.IntegerField(default=0)
-    total_views = models.IntegerField(default=0)
+    
 
     def __str__(self):
         return self.user.username

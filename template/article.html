@@ -56,14 +56,104 @@
                             <span class="ml-3"><i class="far fa-eye mr-2"></i>{{ article.view_count }}</span>
                             <span class="ml-3"><i class="far fa-comment mr-2"></i>{{ comments.count }}</span>
                             <span class="ml-3">
-                                <form method="POST" action="{% url 'like_post' article.id %}">
+                                <!-- Like Button -->
+                                <form method="POST" action="{% url 'like_post' article.id %}" class="like-form">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-link p-0" style="border: none; background: none; color: inherit; cursor: pointer;">
-                                        <i class="far fa-thumbs-up mr-2"></i> {{ article.likes.count }}
+                                    <button type="submit" class="btn btn-link p-0" style="border: none; background: none; cursor: pointer;">
+                                        {% if request.user in article.likes.all %}
+                                            <i class="fas fa-thumbs-up mr-2" style="color: blue;"></i>
+                                        {% else %}
+                                            <i class="far fa-thumbs-up mr-2"></i>
+                                        {% endif %}
+                                        <span class="like-count">{{ article.likes.count }}</span>
+                                    </button>
+                                </form>
+                            </span>
+                            <span class="ml-3">
+                                <!-- Dislike Button -->
+                                <form method="POST" action="{% url 'dislike_post' article.id %}" class="dislike-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link p-0" style="border: none; background: none; cursor: pointer;">
+                                        {% if request.user in article.dislikes.all %}
+                                            <i class="fas fa-thumbs-down mr-2" style="color: red;"></i>
+                                        {% else %}
+                                            <i class="far fa-thumbs-down mr-2"></i>
+                                        {% endif %}
+                                        <span class="dislike-count">{{ article.dislikes.count }}</span>
                                     </button>
                                 </form>
                             </span>
                         </div>
+                        
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Handle like form submission
+                            document.querySelectorAll('.like-form').forEach(form => {
+                                form.addEventListener('submit', function(e) {
+                                    e.preventDefault();
+                                    const button = this.querySelector('button');
+                                    const icon = button.querySelector('i');
+                                    const likeCount = button.querySelector('.like-count');
+                                    const dislikeCount = document.querySelector('.dislike-count');
+                        
+                                    fetch(this.action, {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value,
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        },
+                                        body: new FormData(this)
+                                    }).then(response => response.json())
+                                      .then(data => {
+                                          if (data.liked) {
+                                              icon.classList.remove('far');
+                                              icon.classList.add('fas');
+                                              icon.style.color = 'blue';
+                                          } else {
+                                              icon.classList.remove('fas');
+                                              icon.classList.add('far');
+                                              icon.style.color = '';
+                                          }
+                                          likeCount.textContent = data.likes_count;
+                                          dislikeCount.textContent = data.dislikes_count;
+                                      });
+                                });
+                            });
+                        
+                            // Handle dislike form submission
+                            document.querySelectorAll('.dislike-form').forEach(form => {
+                                form.addEventListener('submit', function(e) {
+                                    e.preventDefault();
+                                    const button = this.querySelector('button');
+                                    const icon = button.querySelector('i');
+                                    const dislikeCount = button.querySelector('.dislike-count');
+                                    const likeCount = document.querySelector('.like-count');
+                        
+                                    fetch(this.action, {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRFToken': this.querySelector('[name=csrfmiddlewaretoken]').value,
+                                            'X-Requested-With': 'XMLHttpRequest'
+                                        },
+                                        body: new FormData(this)
+                                    }).then(response => response.json())
+                                      .then(data => {
+                                          if (data.disliked) {
+                                              icon.classList.remove('far');
+                                              icon.classList.add('fas');
+                                              icon.style.color = 'red';
+                                          } else {
+                                              icon.classList.remove('fas');
+                                              icon.classList.add('far');
+                                              icon.style.color = '';
+                                          }
+                                          dislikeCount.textContent = data.dislikes_count;
+                                          likeCount.textContent = data.likes_count;
+                                      });
+                                });
+                            });
+                        });
+                        </script>
                     </div>
                 </div>
                 <!-- News Detail End -->

@@ -28,6 +28,7 @@ urlpatterns = [
     path('users/', views.admin_list, name='admin-list'),
     path("login-sessions/<int:pk>/", views.user_login_sessions, name="user_login_sessions"),
     path('post/<int:post_id>/like/', views.like_post, name='like_post'),
+       path('dislike/<int:post_id>/', views.dislike_post, name='dislike_post'),
    
    
    
