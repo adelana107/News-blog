@@ -1,150 +1,181 @@
-# 📰 News Blog
+# 📰 News Blog (Django Project)
 
-A full-featured **Django-based News Blog** web application that allows users to **create, read, update, and delete news posts**.  
-Built with **Django**, **HTML**, **CSS**, and **JavaScript**, this project demonstrates backend logic, template rendering, and frontend interactivity.
+A fully functional news/blog web application built with **Django**.  
+This project allows users to read categorized news articles, comment, like/dislike posts, manage profiles, and more.  
+It also includes admin features for content management and supports user authentication.
 
 ---
 
 ## 🚀 Features
 
-✅ User authentication (login, register, logout)  
-✅ Create, edit, and delete blog posts  
-✅ Display all posts with details pages  
-✅ Responsive and interactive frontend using CSS & JavaScript  
-✅ Admin dashboard for managing articles  
-✅ Dynamic URLs and Django templates  
+### 🧑‍💻 User Features
+- Register, login, and logout securely  
+- Update personal profiles with images  
+- View total likes, dislikes, views, and posts  
+- Comment and reply to posts  
+- Like or dislike articles (AJAX-powered, no page reload)  
+- Search posts by title or category  
+- View categorized news pages:
+  - Featured News  
+  - Main News  
+  - Latest News  
+  - Trending News  
+  - Breaking News  
+  - Popular News  
+
+### 🛠️ Admin/Poster Features
+- Create, update, and delete posts  
+- Assign posts to multiple categories  
+- Automatically track post view counts  
+- Manage comments and replies  
+- Restrict post creation to users in the **“Poster”** group  
+
+### ⚙️ Backend Highlights
+- Django ORM for data management  
+- Custom models: `Post`, `Category`, `Comment`, `Profile`, `Like`, `Dislike`, `UserLoginSession`  
+- AJAX endpoints for like/dislike actions  
+- Authentication and authorization with Django’s built-in `User` model  
+- Template rendering and view-based routing  
 
 ---
 
-## 🧱 Tech Stack
-
-- **Backend:** Django (Python)  
-- **Frontend:** HTML, CSS, JavaScript  
-- **Database:** SQLite (default)  
-- **Version Control:** Git & GitHub  
-
----
-
-## 🗂️ Project Structure
+## 🧱 Project Structure
 
 News-blog/
-├── blog/ # Main Django app (models, views, urls)
-├── templates/ # HTML templates for pages
-├── static/ # CSS, JS, images
-├── news_blog/ # Project settings and configurations
-├── manage.py # Django management script
-├── requirements.txt # Python dependencies
+├── blog/
+│ ├── migrations/
+│ ├── templates/
+│ │ ├── home.html
+│ │ ├── article.html
+│ │ ├── profile.html
+│ │ ├── create_post.html
+│ │ ├── update_post.html
+│ │ ├── delete_post.html
+│ │ ├── search_page.html
+│ │ ├── register_page.html
+│ │ ├── login_page.html
+│ │ ├── featured_news.html
+│ │ ├── trending_news.html
+│ │ ├── etc...
+│ ├── static/
+│ ├── forms.py
+│ ├── models.py
+│ ├── views.py
+│ ├── urls.py
+│ └── admin.py
+├── NewsBlog/
+│ ├── settings.py
+│ ├── urls.py
+│ ├── wsgi.py
+│ └── asgi.py
+├── db.sqlite3
+├── manage.py
 └── README.md
 
 yaml
-Copy code
+
 
 ---
 
 ## ⚙️ Installation & Setup
 
-Follow these steps to set up the project locally 👇
-
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/adelana107/News-blog.git
 cd News-blog
-2️⃣ Create a Virtual Environment
+2️⃣ Create Virtual Environment
 bash
-Copy code
+
 python -m venv env
-Activate it:
-
-Windows: env\Scripts\activate
-
-Mac/Linux: source env/bin/activate
-
+source env/bin/activate       # on Windows: env\Scripts\activate
 3️⃣ Install Dependencies
 bash
-Copy code
+
 pip install -r requirements.txt
-4️⃣ Run Database Migrations
+If no requirements.txt exists yet, you can create one:
+
 bash
-Copy code
+
+pip freeze > requirements.txt
+4️⃣ Apply Migrations
+bash
+
 python manage.py makemigrations
 python manage.py migrate
-5️⃣ Create Superuser (optional)
+5️⃣ Create Superuser (for admin access)
 bash
-Copy code
+
 python manage.py createsuperuser
-6️⃣ Start the Server
+6️⃣ Run Development Server
 bash
-Copy code
+
 python manage.py runserver
-Then visit:
+Then open your browser and visit 👉 http://127.0.0.1:8000/
 
-cpp
+🧠 Core Functionality Overview
+✅ Home Page (home)
+Displays:
+
+Featured, Main, Trending, Breaking, Popular, and Latest news
+
+Advertisements (from a dedicated category)
+
+All categories and post previews
+
+✅ Article Page (article/<id>)
+Displays full article content
+
+Tracks view count
+
+Allows comments and replies
+
+Like/dislike with AJAX
+
+✅ Authentication
+login_user, logout_user, registerPage views handle all authentication logic
+
+Uses MyUserCreationForm for registration
+
+✅ Post Management
+create_Post: For “Poster” group users
+
+update_post: Edit existing posts
+
+delete_post: Delete posts safely
+
+✅ Search Feature
+post_search: Search by title or category using Q filters
+
+✅ Profile System
+profile_page: Displays user stats (likes, dislikes, views, total posts)
+
+update_profile: Allows editing profile details
+
+🧩 Technologies Used
+Component	Technology
+Backend	Django (Python)
+Database	SQLite (default)
+Frontend	HTML, CSS, Django Templates
+Auth	Django Auth System
+AJAX	For Like/Dislike buttons
+Other	Django ORM, Messages Framework
+
+📸 Screenshots (Optional)
+You can add screenshots of:
+
+Home Page
+
+Article Page
+
+Create Post Page
+
+Profile Page
+
+Example:
+
+md
 Copy code
-http://127.0.0.1:8000/
-🧩 How It Works
-Users can view all news articles on the homepage.
-
-Logged-in users can create, edit, or delete posts.
-
-Each article has a dedicated detail page.
-
-The admin panel (/admin) allows full content management.
-
-🎨 Frontend Design
-HTML Templates: Used Django Template Language for dynamic rendering
-
-CSS: For styling and responsiveness
-
-JavaScript: For interactivity and DOM manipulation
-
-Static Files: Served using Django’s staticfiles system
-
-🧪 Testing
-Run tests using:
-
-bash
-Copy code
-python manage.py test
-You can also manually test pages through the browser at http://127.0.0.1:8000/.
-
-🌍 Deployment (Optional)
-When deploying to production:
-
-Set DEBUG = False in settings.py
-
-Configure ALLOWED_HOSTS
-
-Collect static files:
-
-bash
-Copy code
-python manage.py collectstatic
-Use a production server like Gunicorn with Nginx
-
-Host on platforms like Render, Railway, or PythonAnywhere
-
-🤝 Contributing
-Contributions are welcome!
-
-Fork this repo
-
-Create a new branch:
-
-bash
-Copy code
-git checkout -b feature-name
-Commit changes:
-
-bash
-Copy code
-git commit -m "Add new feature"
-Push branch:
-
-bash
-Copy code
-git push origin feature-name
-Open a Pull Request
-
+![Home Page Screenshot](screenshots/home.png)
 🧑‍💻 Author
-Adelana Oluwafunmibi
-GitHub: adelana107
+Adelana Oluwafunmibi Cornelius
+🌐 GitHub Profile
